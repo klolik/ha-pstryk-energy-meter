@@ -1,0 +1,12 @@
+{
+    "domain": "pstryk_energy_meter",
+    "name": "Pstryk Energy Meter",
+    "documentation": "https://github.com/klolik/ha-pstryk-energy-meter",
+    "dependencies": [],
+    "codeowners": ["@klolik"],
+    "requirements": [],
+    "version": "0.1.0",
+    "iot_class": "local_polling",
+    "integration_type": "device",
+    "config_flow": true
+}
