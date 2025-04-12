@@ -6,13 +6,20 @@ from datetime import timedelta
 from functools import partial
 from homeassistant.components.sensor import SensorEntity, SensorDeviceClass, SensorStateClass
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import UnitOfPower, UnitOfElectricPotential, UnitOfElectricCurrent
+from homeassistant.const import (
+    CONF_HOST,
+    UnitOfPower,
+    UnitOfElectricPotential,
+    UnitOfElectricCurrent,
+)
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceInfo
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 #from homeassistant.util import dt as dt_util
 import requests
+
+
 from .const import DOMAIN, MANUFACTURER, DEFAULT_NAME, HOME_URL
 
 
@@ -38,8 +45,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
     _LOGGER.debug("setting up coordinator for %s", entry)
 
     #TODO# separate coordinator for /info? how should we poll for firmware updates?
-    hostname = entry.data.get("hostname")
-    response = await hass.async_add_executor_job(partial(requests.get, f"http://{hostname}/info", timeout=2))
+    host = entry.data.get(CONF_HOST)
+    response = await hass.async_add_executor_job(partial(requests.get, f"http://{host}/info", timeout=2))
     info = response.json()
 
     coordinator = PstrykEnergyMeterDataUpdateCoordinator(hass, entry, info)
@@ -80,8 +87,8 @@ class PstrykEnergyMeterDataUpdateCoordinator(DataUpdateCoordinator):
         )
 
         self.entry = entry
-        self.hostname = entry.data.get("hostname")
-        _LOGGER.debug("hostname: %s", self.hostname)
+        self.host = entry.data.get(CONF_HOST)
+        _LOGGER.debug("host: %s", self.host)
 
         self._raw_data = None
         self.data = None
@@ -101,8 +108,8 @@ class PstrykEnergyMeterDataUpdateCoordinator(DataUpdateCoordinator):
 
     async def _async_update_data(self):
         try:
-            _LOGGER.debug("calling %s", self.hostname)
-            response = await self.hass.async_add_executor_job(requests.get, f"http://{self.hostname}/state")
+            _LOGGER.debug("calling %s", self.host)
+            response = await self.hass.async_add_executor_job(requests.get, f"http://{self.host}/state")
             response.raise_for_status()
             self._raw_data = response.json()
             _LOGGER.debug("received %s", self._raw_data)

@@ -4,24 +4,28 @@
 import logging
 from functools import partial
 from homeassistant import config_entries
-#from homeassistant.core import callback
-#from homeassistant.data_entry_flow import FlowResultType
+from homeassistant.const import (
+    CONF_HOST,
+    CONF_NAME,
+)
 import voluptuous as vol
 import requests
 
 from .const import DOMAIN
 
+
 _LOGGER = logging.getLogger(__name__)
 
 SCHEMA = vol.Schema({
-    vol.Required("name"): str,
-    vol.Required("hostname"): str,
+    vol.Required(CONF_NAME): str,
+    vol.Required(CONF_HOST): str,
 })
+
 
 class PstrykEnergyMeterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Config Flow for Pstryk Energy Meter"""
 
-    VERSION = 1
+    VERSION = 2
 
     async def async_step_user(self, user_input=None):
         if user_input is None:
@@ -32,8 +36,8 @@ class PstrykEnergyMeterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         errors = {}
 
-        hostname = user_input["hostname"]
-        response = await self.hass.async_add_executor_job(partial(requests.get, f"http://{hostname}/info", timeout=2))
+        host = user_input[CONF_HOST]
+        response = await self.hass.async_add_executor_job(partial(requests.get, f"http://{host}/info", timeout=2))
         try:
             response.raise_for_status()
         except requests.exceptions.RequestException as ex:
@@ -60,5 +64,5 @@ class PstrykEnergyMeterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         await self.async_set_unique_id(serial)
         self._abort_if_unique_id_configured()
 
-        name = user_input["name"]
+        name = user_input[CONF_NAME]
         return self.async_create_entry(title=f"{product} {name}", data=user_input)
