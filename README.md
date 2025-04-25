@@ -16,3 +16,7 @@ Current 3: 17 mA
 Voltage 1: 237,1 V
 Voltage 2: 237,0 V
 Voltage 3: 237,3 V
+
+# But actually
+
+You can integrate the meter using Home Assistant native BleBox integration.
